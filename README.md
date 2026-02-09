@@ -31,3 +31,11 @@ La implementación se ha realizado en **C++** utilizando **Ubuntu 22.04**.
 * **PCL** (Point Cloud Library).
 * **CMake** para la compilación.
 * **CloudCompare** para la visualización de resultados.
+
+## Compilar el proyecto
+
+``` bash
+mkdir build && cd build
+cmake ..
+make
+./eliminar_suelo
