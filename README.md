@@ -41,3 +41,12 @@ mkdir build && cd build
 cmake ..
 make
 ./eliminar_suelo ../saved_pointcloud.pcd
+```
+
+---
+
+## Resultados
+| Antes del procesamiento | Después del procesamiento |
+|-------------------------|---------------------------|
+| ![Antes](images/antes.png) | ![Después](images/resultado.png) |
+
