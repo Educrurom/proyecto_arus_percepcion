@@ -16,6 +16,7 @@ struct PointXYZIRT
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
+// Traductor
 POINT_CLOUD_REGISTER_POINT_STRUCT(
     PointXYZIRT,
     (float, x, x)
@@ -35,7 +36,8 @@ int main(int argc, char** argv)
     }
 
     // Cargar nube
-    pcl::PointCloud<PointXYZIRT>::Ptr cloud(new pcl::PointCloud<PointXYZIRT>);
+    pcl::PointCloud<PointXYZIRT>::Ptr cloud(new pcl::PointCloud<PointXYZIRT>); 
+    
     if (pcl::io::loadPCDFile(argv[1], *cloud) == -1)
     {
         std::cerr << "Error al leer el archivo PCD" << std::endl;
@@ -82,10 +84,10 @@ int main(int argc, char** argv)
     pcl::PointCloud<PointXYZIRT>::Ptr objetos(new pcl::PointCloud<PointXYZIRT>);
 
     float h = 0.4f; 
-    float intensidad_suelo = 40.0f;
+    float intensidad_suelo = 35.0f;
 
     for (const auto& p : cloud->points)
-    {
+    {   // Calculo de distancia del punto respecto al plano
         float dist = (a*p.x + b*p.y + c*p.z + d) / norm;
 
         // El punto debe estar por encima de la intensidad promedio del suelo y por encima del umbral del plano.

@@ -7,7 +7,7 @@ Este repositorio contiene la solución a las tareas de admisión para el departa
 Necesitamos eliminar el suelo de la nube de puntos sin perder los datos de los conos; para ello, debemos buscar una forma de diferenciar el suelo. En la nube de puntos, el suelo es el plano que contiene más puntos. Por lo tanto, solo debemos encontrar un algoritmo capaz de hallar este plano.
 
 ### Ajuste del plano
-Para lograrlo, debemos localizar tres puntos (X, Y, Z) incluidos en ese plano. La forma más óptima es ir iterando de tres en tres puntos hasta encontrar el plano con mayor número de puntos contenidos.
+El algoritmo selecciona subconjuntos aleatorios de tres puntos (X,Y,Z) para proponer un modelo de plano. Mediante este proceso iterativo (RANSAC), se identifica el plano que contiene el mayor número de puntos coincidentes, permitiendo separar el suelo del resto de la escena de forma robusta.
 
 ### Tratamiento de rugosidad
 Por otro lado, nos encontramos con el problema del ruido y los baches. Para solucionarlo, introduciremos un umbral (threshold).
@@ -29,10 +29,19 @@ Una vez obtenido el plano del suelo, se realizará el filtrado final utilizando 
 
 La implementación se ha realizado en **C++** utilizando **Ubuntu 22.04**.
 
-### Requisitos
-* **PCL** (Point Cloud Library).
-* **CMake** para la compilación.
+### Requisitos previos
+* **Herramientas de desarrollo** (C++, CMake, Git):
+```bash
+sudo apt install build-essential gdb cmake git -y
+```
+* **PCL** (Point Cloud Library):
+```bash
+sudo apt install libpcl-dev pcl-tools -y
+```
 * **CloudCompare** para la visualización de resultados.
+```bash
+sudo snap install cloudcompare
+```
 
 ## Compilar el proyecto
 
@@ -49,4 +58,13 @@ make
 | Antes del procesamiento | Después del procesamiento |
 |-------------------------|---------------------------|
 | ![Antes](images/antes.png) | ![Después](images/resultado.png) |
+
+## Problemas y Soluciones
+* **Ruido:** Al aplicar un umbral de distancia (threshold) elevado para absorber las irregularidades del asfalto, se seguía generando mucho ruido residual. Si elvaba más el umbral, eliminaría la base de los conos y si lo dejabá igual dejaría ruido.
+
+    * Solución: Se implementó un filtrado de doble criterio. En lugar de confiar solo en el umbral, se utilizó la intensidad del punto. Dado que el material de los conos tiene refleja más que el asfalto, se elimnan los puntos que, aun estando fuera del plano, no superaban un nivel de intensidad mínimo.
+
+    
+
+
 
