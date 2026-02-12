@@ -43,6 +43,10 @@ sudo apt install build-essential gdb cmake git -y
 ```bash
 sudo snap install cloudcompare
 ```
+* **PCL** (Point Cloud Library):
+```bash
+sudo apt install libpcl-dev pcl-tools -y
+```
 
 ## Compilar el proyecto
 

@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     pcl::PointCloud<PointXYZIRT>::Ptr objetos(new pcl::PointCloud<PointXYZIRT>);
 
     float distancia_minima_suelo = 0.4f; 
-    float intensidad_media_suelo = 35.0f;
+    float intensidad_media_suelo = 30.0f;
 
     for (const auto& p : cloud->points)
     {   
