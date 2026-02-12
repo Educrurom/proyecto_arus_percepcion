@@ -83,15 +83,17 @@ int main(int argc, char** argv)
     // FILTRADO FINAL
     pcl::PointCloud<PointXYZIRT>::Ptr objetos(new pcl::PointCloud<PointXYZIRT>);
 
-    float h = 0.4f; 
-    float intensidad_suelo = 35.0f;
+    float distancia_minima_suelo = 0.4f; 
+    float intensidad_media_suelo = 35.0f;
 
     for (const auto& p : cloud->points)
-    {   // Calculo de distancia del punto respecto al plano
-        float dist = (a*p.x + b*p.y + c*p.z + d) / norm;
+    {   
+        // Calcular distancia al plano (valor absoluto por normal invertida)
+        float dist = std::abs(a*p.x + b*p.y + c*p.z + d) / norm;
 
-        // El punto debe estar por encima de la intensidad promedio del suelo y por encima del umbral del plano.
-        if (dist >= h && p.intensity > intensidad_suelo) 
+        // El punto debe estar por encima de la intensidad promedio del suelo
+        // y por encima del umbral del plano.
+        if (dist >= distancia_minima_suelo && p.intensity > intensidad_media_suelo) 
         {
             objetos->push_back(p);
         }

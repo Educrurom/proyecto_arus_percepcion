@@ -1,27 +1,32 @@
-# Tarea de Admisión: Percepción - Driverless (ARUS)
+# Tarea de Admisión: Percepción (ARUS)
 
 Este repositorio contiene la solución a las tareas de admisión para el departamento de Percepción. El objetivo principal es el filtrado de una nube de puntos (LiDAR) para eliminar el suelo y aislar los conos del circuito.
 
 ## Tarea 1: Razonamiento del Algoritmo
 
-Necesitamos eliminar el suelo de la nube de puntos sin perder los datos de los conos; para ello, debemos buscar una forma de diferenciar el suelo. En la nube de puntos, el suelo es el plano que contiene más puntos. Por lo tanto, solo debemos encontrar un algoritmo capaz de hallar este plano.
+Necesitamos eliminar el suelo de la nube de puntos sin perder los datos de los conos; para ello, debemos buscar una forma de diferenciar el suelo. En la nube de puntos, el suelo es el plano que contiene más puntos. Por lo tanto, el problema se reduce a encontrar un algoritmo capaz de hallar este plano.
 
 ### Ajuste del plano
-El algoritmo selecciona subconjuntos aleatorios de tres puntos (X,Y,Z) para proponer un modelo de plano. Mediante este proceso iterativo (RANSAC), se identifica el plano que contiene el mayor número de puntos coincidentes, permitiendo separar el suelo del resto de la escena de forma robusta.
+El algoritmo selecciona subconjuntos aleatorios de tres puntos (X, Y, Z) para proponer un modelo de plano. Mediante este proceso iterativo (RANSAC), se identifica el plano que contiene el mayor número de puntos coincidentes, permitiendo separar el suelo.
 
 ### Tratamiento de rugosidad
-Por otro lado, nos encontramos con el problema del ruido y los baches. Para solucionarlo, introduciremos un umbral (threshold).
+Para gestionar el ruido y las irregularidades del terreno, se introduce un umbral (threshold) respecto al plano estimado.  
+Este umbral permite descartar puntos pertenecientes al suelo.
 
 ### Optimización del algoritmo
-Además, podemos optimizar este algoritmo gracias al dato del ring y la intensidad con la que se devuelve el punto:
-* Podemos hacer uso de los rings, debido a que los de menor índice siempre impactan en el suelo. Por lo tanto, para no tener que iterar entre todos los puntos, restringiremos la búsqueda de los puntos entre estos rings.
-* Podemos hacer uso de la intensidad con la que se devuelve el punto, debido a que el suelo devolverá menos intensidad que el plastico de los conos. Por lo tanto, restringiremos la búsqueda de los puntos entre los de menor intensidad.
+Además, podemos optimizar este algoritmo para reducir el coste computacional gracias al dato del ring y la intensidad con la que se devuelve el punto:
+* **Rings:** Los rings de menor índice son los de la parte inferior del LiDAR, que impactan mayoritariamente en el suelo. Por ello, se restringe la búsqueda a estos en vez de tener que iterar entre todos los puntos de la nube.
+* **Intensidad:** El asfalto devuelve una intensidad menor que la del plástico de los conos. Este dato nos permite eliminar puntos que, a pesar de estar fuera del plano, no pertenecen a los objetos de importancia.
 
-### RANSAC
-Para no reinventar la rueda, utilizaremos la librería PCL (Point Cloud Library), que incluye RANSAC, un algoritmo iterativo utilizado para estimar los parámetros de un modelo matemático, permitiéndonos centrar nuestros esfuerzos en la lógica de filtrado y optimización de los parámetros
+### Uso de RANSAC (PCL)
+Para evitar implementar el algoritmo desde cero, utilizaremos la librería **PCL (Point Cloud Library)**, que incluye **RANSAC**, un algoritmo iterativo utilizado para estimar los parámetros de un modelo matemático, permitiéndonos centrar nuestros esfuerzos en la lógica de filtrado y optimización de los parámetros.
 
 ### Filtrado final
-Una vez obtenido el plano del suelo, se realizará el filtrado final utilizando tanto la distancia de los puntos al plano como la intensidad reflejada. Los puntos que se encuentren fuera del umbral del plano y su intensidad sea superior a la media de la intensidad del suelo, será tratado como un objeto, por lo que se mantendrán en la nube de puntos resultante.
+Una vez obtenido el plano del suelo, se realizará el filtrado final utilizando:
+* **Distancia al plano:** Se conservarán los puntos fuera del umbral definido.
+* **Intensidad:** Se conservarán los puntos con una intensidad reflejada superior a la media reflejada del suelo.
+
+Solo los puntos que cumplan ambos criterios serán conservados en el resultado final.
 
 ---
 
@@ -33,10 +38,6 @@ La implementación se ha realizado en **C++** utilizando **Ubuntu 22.04**.
 * **Herramientas de desarrollo** (C++, CMake, Git):
 ```bash
 sudo apt install build-essential gdb cmake git -y
-```
-* **PCL** (Point Cloud Library):
-```bash
-sudo apt install libpcl-dev pcl-tools -y
 ```
 * **CloudCompare** para la visualización de resultados.
 ```bash
@@ -55,14 +56,20 @@ make
 ---
 
 ## Resultados
+Se observa que el suelo ha sido eliminado de forma consistente, conservando la estructura completa de los conos y reduciendo significativamente el ruido residual.
+
 | Antes del procesamiento | Después del procesamiento |
 |-------------------------|---------------------------|
 | ![Antes](images/antes.png) | ![Después](images/resultado.png) |
 
 ## Problemas y Soluciones
-* **Ruido:** Al aplicar un umbral de distancia (threshold) elevado para absorber las irregularidades del asfalto, se seguía generando mucho ruido residual. Si elvaba más el umbral, eliminaría la base de los conos y si lo dejabá igual dejaría ruido.
+* **Ruido:** Al aplicar un umbral de distancia (threshold) elevado para absorber las irregularidades del asfalto, se seguía generando mucho ruido residual. Si se eleva más el umbral, se eliminaría la base de los conos, y si se dejaba igual, seguiría apareciendo ruido.
 
-    * Solución: Se implementó un filtrado de doble criterio. En lugar de confiar solo en el umbral, se utilizó la intensidad del punto. Dado que el material de los conos tiene refleja más que el asfalto, se elimnan los puntos que, aun estando fuera del plano, no superaban un nivel de intensidad mínimo.
+    * **Solución:** Se implementó un filtrado de doble criterio. En lugar de confiar solo en el umbral, se utilizó la intensidad del punto. Dado que el material de los conos refleja más que el asfalto, se eliminan los puntos que, aun estando fuera del plano, no superaban un nivel de intensidad mínimo.
+
+## Trabajo futuro
+* **Intensidad:** En lugar de establecer un umbral fijo para el filtrado por intensidad, calcular la media de las intensidades de los puntos pertenecientes al plano estimado y utilizarla como referencia dinámica.
+
 
     
 
