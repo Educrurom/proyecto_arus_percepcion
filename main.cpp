@@ -1,3 +1,4 @@
+// Desactiva la precompilación de tipos de puntos en PCL
 #define PCL_NO_PRECOMPILE
 
 #include <pcl/io/pcd_io.h>
@@ -6,7 +7,7 @@
 #include <iostream>
 #include <cmath>
 
-// Estructura
+// Estructura de punto
 struct PointXYZIRT
 {
   PCL_ADD_POINT4D;
@@ -35,7 +36,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // Cargar nube
+    // Cargar de la nube
     pcl::PointCloud<PointXYZIRT>::Ptr cloud(new pcl::PointCloud<PointXYZIRT>); 
     
     if (pcl::io::loadPCDFile(argv[1], *cloud) == -1)
@@ -44,14 +45,14 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // Subnube optimizada
+    // Subnube optimizada para RANSAC
     pcl::PointCloud<PointXYZIRT>::Ptr cloud_rings(new pcl::PointCloud<PointXYZIRT>);
-    float intensidad_max = 40.0f;
+    float umbral_intensidad_max = 40.0f;
     uint16_t umbral_ring_inferiores = 10;
 
     for (const auto& p : cloud->points)
     {
-        if (p.ring <= umbral_ring_inferiores and p.intensity< intensidad_max) 
+        if (p.ring <= umbral_ring_inferiores and p.intensity< umbral_intensidad_max) 
             cloud_rings->push_back(p);
     }
 
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
     float d = coefficients->values[3];
     float norm = std::sqrt(a*a + b*b + c*c);
     
-    // FILTRADO FINAL
+    // Filtrado final
     pcl::PointCloud<PointXYZIRT>::Ptr objetos(new pcl::PointCloud<PointXYZIRT>);
 
     float distancia_minima_suelo = 0.4f; 
@@ -99,9 +100,10 @@ int main(int argc, char** argv)
         }
     }
 
-    // 5. Guardar resultados
+    // Guardar resultados
     pcl::io::savePCDFileBinary("objetos.pcd", *objetos);
 
     std::cout << "Original: " << cloud->size() << " | Objetos: " << objetos->size() << std::endl;
     return 0;
 }
+
